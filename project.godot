@@ -21,6 +21,11 @@ Globals="*res://globals.gd"
 Controls="*res://addons/3d_player_controller/controls.gd"
 States="*res://addons/3d_player_controller/states/states.gd"
 
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"
