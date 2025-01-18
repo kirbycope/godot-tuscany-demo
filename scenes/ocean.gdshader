@@ -38,7 +38,7 @@ void fragment() {
 
     // Calculate Fresnel effect
     float fresnel = pow(1.0 - clamp(dot(normal, view_dir), 0.0, 1.0), 5.0);
-    
+
     // Limit the transparency based on view angle
     float view_transparency = clamp(transparency + fresnel * 0.5, min_opacity, 1.0);
 
@@ -52,7 +52,7 @@ void fragment() {
 
     // Combine water texture and refraction with improved lighting
     vec4 water_color = mix(tex_color, background_color, view_transparency);
-    
+
     // Final output with ambient light
     ALBEDO = water_color.rgb * (diffuse + ambient_light);
     SPECULAR = specular;
