@@ -4,7 +4,7 @@
 parameter_name = "MainTex"
 
 [sub_resource type="VisualShaderNodeTexture" id="VisualShaderNodeTexture_v8wjo"]
-source = 2
+source = 5
 
 [sub_resource type="VisualShaderNodeVectorDecompose" id="VisualShaderNodeVectorDecompose_03rne"]
 default_input_values = [0, Quaternion(0, 0, 0, 0)]
@@ -54,7 +54,7 @@ void fragment() {
 
 	vec4 n_out3p0;
 // Texture2D:3
-	n_out3p0 = vec4(0.0);
+	n_out3p0 = texture(MainTex, UV);
 
 
 // VectorOp:6
@@ -75,7 +75,7 @@ void fragment() {
 
 }
 "
-graph_offset = Vector2(-189.747, -19.2728)
+graph_offset = Vector2(-216.755, 57.0324)
 nodes/vertex/2/node = SubResource("VisualShaderNodeBillboard_oyo0q")
 nodes/vertex/2/position = Vector2(-20, 400)
 nodes/vertex/connections = PackedInt32Array(2, 0, 0, 10)
