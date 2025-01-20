@@ -90,7 +90,7 @@ scale_min = 0.01
 scale_max = 0.12
 color = Color(4.01176, 1, 0.623529, 1)
 turbulence_enabled = true
-turbulence_noise_scale = 5.0
+turbulence_noise_scale = 2.0
 
 [sub_resource type="QuadMesh" id="QuadMesh_0wgyl"]
 
@@ -123,7 +123,7 @@ draw_pass_1 = SubResource("QuadMesh_0hjnc")
 [node name="ParticlesFloating" type="GPUParticles3D" parent="."]
 sorting_offset = 1.0
 material_override = SubResource("ShaderMaterial_4f6lr")
-amount = 50
+amount = 25
 lifetime = 2.0
 process_material = SubResource("ParticleProcessMaterial_65bje")
 draw_pass_1 = SubResource("QuadMesh_0wgyl")
