@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3 uid="uid://e22s018dtlsl"]
+[gd_scene load_steps=22 format=3 uid="uid://e22s018dtlsl"]
 
 [ext_resource type="Shader" uid="uid://bfpgrfhy2nwlj" path="res://scenes/fire_shader.tres" id="1_jo0vk"]
 [ext_resource type="Texture2D" uid="uid://c1tjjn6i6wa75" path="res://assets/gap/Voronoi01.png" id="2_vqstn"]
@@ -7,7 +7,6 @@
 [ext_resource type="Shader" uid="uid://e3ujct5dhb5a" path="res://scenes/fire_particles_shader.tres" id="5_v8geq"]
 [ext_resource type="Texture2D" uid="uid://cjhj7i7a541b2" path="res://assets/gap/Flare00.PNG" id="6_rx1bk"]
 [ext_resource type="AudioStream" uid="uid://8w2agg0xih6c" path="res://assets/freesound/650574__soundofsong__fire-crackling-loop.wav" id="7_begoh"]
-[ext_resource type="Script" path="res://scenes/audio_stream_player_3d.gd" id="8_0rhw1"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_32ade"]
 render_priority = 0
@@ -133,4 +132,3 @@ stream = ExtResource("7_begoh")
 volume_db = -10.0
 autoplay = true
 max_distance = 5.0
-script = ExtResource("8_0rhw1")

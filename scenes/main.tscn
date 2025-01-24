@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://bwsx8k5do7gtx"]
+[gd_scene load_steps=10 format=3 uid="uid://bwsx8k5do7gtx"]
 
 [ext_resource type="PackedScene" uid="uid://bnj6yipdd5qyq" path="res://scenes/tuscany.tscn" id="1_n7jk0"]
 [ext_resource type="Script" path="res://scenes/main.gd" id="1_rw8eg"]
@@ -6,7 +6,6 @@
 [ext_resource type="Texture2D" uid="uid://cjhj7i7a541b2" path="res://assets/gap/Flare00.PNG" id="4_fp264"]
 [ext_resource type="Script" path="res://scenes/gpu_particles_3d.gd" id="4_rdnu5"]
 [ext_resource type="AudioStream" uid="uid://cybembj4eya4u" path="res://assets/freesound/383394__emanuelecaro__sunset-woods-frossasco-italy.mp3" id="6_khjwb"]
-[ext_resource type="Script" path="res://scenes/audio_stream_player.gd" id="7_qss2f"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_brr0j"]
 transparency = 1
@@ -50,4 +49,3 @@ script = ExtResource("4_rdnu5")
 stream = ExtResource("6_khjwb")
 volume_db = -35.0
 autoplay = true
-script = ExtResource("7_qss2f")

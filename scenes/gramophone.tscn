@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=4 uid="uid://bjbl63phks7xq"]
+[gd_scene load_steps=21 format=4 uid="uid://bjbl63phks7xq"]
 
 [ext_resource type="Texture2D" uid="uid://2851q27xra0x" path="res://assets/gramophone/Table_Base_Color.png" id="1_rehcv"]
 [ext_resource type="Texture2D" uid="uid://bcaiclvv5p12x" path="res://assets/gramophone/Table_AO.png" id="2_vuf87"]
@@ -12,7 +12,6 @@
 [ext_resource type="Texture2D" uid="uid://bcuarik7q5lcn" path="res://assets/gramophone/Gramophone_Normal.png" id="10_kfcea"]
 [ext_resource type="Texture2D" uid="uid://d4itok7yryhcf" path="res://assets/gramophone/Gramophone_Roughness.png" id="11_kjpu1"]
 [ext_resource type="AudioStream" uid="uid://dxpbipro65s4v" path="res://assets/freesound/Concerto No. 1 in E major, Op. 8, RV 269, _La primavera_ (Spring) _ III. Allegro pastorale 4.mp3" id="12_eshn2"]
-[ext_resource type="Script" path="res://scenes/audio_stream_player_3d.gd" id="13_ela4j"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_t31vs"]
 resource_name = "table_material"
@@ -289,7 +288,7 @@ bones/3/parent = 0
 bones/3/rest = Transform3D(0, 0.999426, 0.0338789, 0, 0.0338789, -0.999426, -1, 0, 0, 0.496932, -0.428107, 1.66533e-16)
 bones/3/enabled = true
 bones/3/position = Vector3(0.496922, -0.427812, -0.00287823)
-bones/3/rotation = Quaternion(0.0256683, 0.0265532, -0.694552, 0.718494)
+bones/3/rotation = Quaternion(0.0256683, 0.0265532, -0.694551, 0.718495)
 bones/3/scale = Vector3(1, 1, 1)
 bones/4/name = "joint5"
 bones/4/parent = 3
@@ -330,10 +329,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.76996e-17, -0.0209232, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.344736, 0.119472, 0.182317)
 
 [node name="nurbsCircle5" type="Node3D" parent="nurbsCircle1"]
-transform = Transform3D(0.0738126, 0, -0.997272, 0, 1, 0, 0.997272, 0, 0.0738126, 0.0081503, 0.437982, 0.43883)
+transform = Transform3D(0.0738125, 0, -0.997272, 0, 1, 0, 0.997272, 0, 0.0738125, 0.0081503, 0.437982, 0.43883)
 
 [node name="nurbsCircle6" type="Node3D" parent="nurbsCircle1/nurbsCircle5"]
-transform = Transform3D(0.954825, 0.286835, -0.0776858, -0.286835, 0.821232, -0.493259, -0.0776858, 0.493259, 0.866407, -0.110827, -0.0658474, -0.331426)
+transform = Transform3D(0.954825, 0.286836, -0.077686, -0.286836, 0.821232, -0.493258, -0.0776859, 0.493258, 0.866407, -0.110827, -0.0658474, -0.331426)
 
 [node name="nurbsCircle7" type="Node3D" parent="nurbsCircle1"]
 transform = Transform3D(5.49162, 0, -1.3567, 0, 5.65672, 0, 1.3567, 0, 5.49162, 0.284916, 0.266064, -0.28277)
@@ -349,4 +348,3 @@ stream = ExtResource("12_eshn2")
 volume_db = -5.0
 autoplay = true
 max_distance = 10.0
-script = ExtResource("13_ela4j")
