@@ -251,7 +251,7 @@ tracks/17/keys = PackedFloat32Array(0, 1, 0.25845, -6.54209e-09, -0.150292, 0.95
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_sy6er"]
 _data = {
-"Take 001": SubResource("Animation_13bq5")
+&"Take 001": SubResource("Animation_13bq5")
 }
 
 [node name="Gramophone" type="Node3D"]

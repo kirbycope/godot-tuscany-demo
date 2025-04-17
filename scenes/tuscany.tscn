@@ -7,7 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://botftrg0xb8m4" path="res://assets/tuscany/model/tuscany_Map---236-05.png" id="4_06a4s"]
 [ext_resource type="Texture2D" uid="uid://dapmrpxnil4he" path="res://assets/tuscany/model/tuscany_Map---235.png" id="5_bxc6s"]
 [ext_resource type="Texture2D" uid="uid://b8km7w2o6ukf2" path="res://assets/tuscany/model/tuscany_Map---144-04.jpg" id="6_1c1fg"]
-[ext_resource type="Shader" path="res://scenes/ocean.gdshader" id="6_ateaa"]
+[ext_resource type="Shader" uid="uid://jjtp7bsj0afw" path="res://scenes/ocean.gdshader" id="6_ateaa"]
 [ext_resource type="Texture2D" uid="uid://dmqvsebn8dv21" path="res://assets/tuscany/model/tuscany_Map---144-01.jpg" id="7_fo8pv"]
 [ext_resource type="Texture2D" uid="uid://cwc6bwv84s6k" path="res://assets/tuscany/model/tuscany_Map---144.jpg" id="8_gcuey"]
 [ext_resource type="Texture2D" uid="uid://cne8bur27tjgg" path="res://assets/tuscany/model/tuscany_Map---144-03.jpg" id="9_yiq2d"]
@@ -54,7 +54,7 @@
 [ext_resource type="Texture2D" uid="uid://cl45y7lbbb2k7" path="res://assets/tuscany/model/tuscany_Map---149-01.jpg" id="50_56ikl"]
 [ext_resource type="Texture2D" uid="uid://d4dm5g0qiqo4e" path="res://assets/tuscany/model/tuscany_Map---148.jpg" id="51_11nht"]
 [ext_resource type="PackedScene" uid="uid://e22s018dtlsl" path="res://scenes/fire.tscn" id="54_avxoy"]
-[ext_resource type="Shader" path="res://scenes/fountain.gdshader" id="55_s2i01"]
+[ext_resource type="Shader" uid="uid://c3812rt4isj4u" path="res://scenes/fountain.gdshader" id="55_s2i01"]
 [ext_resource type="AudioStream" uid="uid://bfsossybki3fd" path="res://assets/freesound/50932__dobroide__20080320fuente1.mp3" id="56_4w4ib"]
 [ext_resource type="PackedScene" uid="uid://bjbl63phks7xq" path="res://scenes/gramophone.tscn" id="58_q77tp"]
 
@@ -433,6 +433,7 @@ shadow_mesh = SubResource("ArrayMesh_uydn2")
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_0gj0y"]
 render_priority = 0
 shader = ExtResource("6_ateaa")
+shader_parameter/water_texture = ExtResource("5_bxc6s")
 shader_parameter/speed = 0.5
 shader_parameter/wave_strength = 0.1
 shader_parameter/wave_scale = Vector2(4, 4)
@@ -442,7 +443,6 @@ shader_parameter/transparency = 0.5
 shader_parameter/refraction_strength = 0.05
 shader_parameter/min_opacity = 0.3
 shader_parameter/ambient_light = 0.2
-shader_parameter/water_texture = ExtResource("5_bxc6s")
 
 [sub_resource type="ArrayMesh" id="ArrayMesh_nwlx1"]
 _surfaces = [{
@@ -2190,8 +2190,8 @@ data = PackedVector3Array(7.1913, 3.1475, 15.2863, -0.1946, 3.1787, 16.5664, 1.3
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_587wj"]
 render_priority = 0
 shader = ExtResource("55_s2i01")
-shader_parameter/scroll_speed = -0.08
 shader_parameter/water_texture = ExtResource("5_bxc6s")
+shader_parameter/scroll_speed = -0.08
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_4ilw8"]
 material = SubResource("ShaderMaterial_587wj")
