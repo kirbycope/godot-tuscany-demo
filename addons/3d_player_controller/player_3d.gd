@@ -74,12 +74,13 @@ var is_crawling: bool = false
 var is_crouching: bool = false
 var is_double_jumping: bool = false
 var is_driving: bool = false
-var is_driving_in
+var is_driving_in ## The Node the player is driving
 var is_falling: bool = false
 var is_firing: bool = false
 var is_flying: bool = false
 var is_hanging: bool = false
 var is_holding: bool = false
+var is_holding_onto ## The Node held in a player's hand
 var is_holding_fishing_rod: bool = false
 var is_holding_rifle: bool = false
 var is_holding_tool: bool = false
@@ -92,45 +93,53 @@ var is_reeling: bool = false
 var is_running: bool = false
 var is_shimmying: bool = false
 var is_skateboarding: bool = false
-var is_skateboarding_on
+var is_skateboarding_on ## The Node the player is skateboarding on
 var is_sprinting: bool = false
 var is_standing: bool = false
-var is_swimming_in
+var is_swimming_in ## The Node the player is swimming in
 var is_swimming: bool = false
 var is_using: bool = false
 var is_walking: bool = false
 var virtual_velocity: Vector3 = Vector3.ZERO
 
 # Note: `@onready` variables are set when the scene is loaded.
+# Audio and Animation
 @onready var animation_player = $Visuals/AuxScene/AnimationPlayer
 @onready var audio_player = $AudioStreamPlayer3D
+# State Management
 @onready var base_state: BaseState = $States/Base
+# Camera and Mount
 @onready var camera_mount = $CameraMount
-@onready var camera = $CameraMount/Camera3D
-@onready var chat_window = $CameraMount/Camera3D/ChatWindow
+@onready var camera = camera_mount.get_node("Camera3D")
+# UI Elements
+@onready var chat_window = camera.get_node("ChatWindow")
+@onready var menu_pause = camera.get_node("Pause")
+@onready var menu_settings = menu_pause.get_node("../Settings")
+# Collision and Physics
 @onready var collision_shape = $CollisionShape3D
-@onready var collision_height = $CollisionShape3D.shape.height
-@onready var collision_position = $CollisionShape3D.position
-@onready var collision_radius = $CollisionShape3D.shape.radius
-@onready var held_item_mount = $Visuals/HeldItemMount
-@onready var initial_position = position
-@onready var look_at_modifier = $Visuals/AuxScene/GeneralSkeleton/LookAtModifier3D
-@onready var player_skeleton = $Visuals/AuxScene/GeneralSkeleton
-@onready var raycast_lookat = $CameraMount/Camera3D/RayCast3D
+@onready var collision_height = collision_shape.shape.height
+@onready var collision_position = collision_shape.position
+@onready var collision_radius = collision_shape.shape.radius
+@onready var shapecast = $ShapeCast3D
+# RayCasts
+@onready var raycast_lookat = camera.get_node("RayCast3D")
 @onready var raycast_jumptarget = $Visuals/RayCast3D_JumpTarget
 @onready var raycast_top = $Visuals/RayCast3D_InFrontPlayer_Top
-@onready var raycast_high = $Visuals/RayCast3D_InFrontPlayer_High
-@onready var raycast_middle = $Visuals/RayCast3D_InFrontPlayer_Middle
-@onready var raycast_use = $Visuals/RayCast3D_InFrontPlayer_Use
-@onready var raycast_low = $Visuals/RayCast3D_InFrontPlayer_Low
-@onready var raycast_below = $Visuals/RayCast3D_BelowPlayer
-@onready var menu_pause = $CameraMount/Camera3D/Pause
-@onready var menu_settings = $CameraMount/Camera3D/Settings
-@onready var shapecast = $ShapeCast3D
+@onready var raycast_high = raycast_top.get_node("../RayCast3D_InFrontPlayer_High")
+@onready var raycast_middle = raycast_top.get_node("../RayCast3D_InFrontPlayer_Middle")
+@onready var raycast_use = raycast_top.get_node("../RayCast3D_InFrontPlayer_Use")
+@onready var raycast_low = raycast_top.get_node("../RayCast3D_InFrontPlayer_Low")
+@onready var raycast_below = raycast_top.get_node("../RayCast3D_BelowPlayer")
+# Visuals and Skeleton
 @onready var visuals = $Visuals
-@onready var visuals_offset = $Visuals.position
-@onready var visuals_aux_scene = $Visuals/AuxScene
-@onready var visuals_aux_scene_position = $Visuals/AuxScene.position
+@onready var visuals_offset = visuals.position
+@onready var visuals_aux_scene = visuals.get_node("AuxScene")
+@onready var visuals_aux_scene_position = visuals_aux_scene.position
+@onready var player_skeleton = visuals_aux_scene.get_node("GeneralSkeleton")
+@onready var look_at_modifier = player_skeleton.get_node("LookAtModifier3D")
+@onready var held_item_mount = visuals.get_node("HeldItemMount")
+# Initial Values
+@onready var initial_position = position
 
 
 ## Called when the node enters the scene tree for the first time.
@@ -138,23 +147,26 @@ func _ready() -> void:
 	# Uncomment the next line if using GodotSteam
 	#camera.current = is_multiplayer_authority()
 
-	# Make sure the game is unpaused
-	game_paused = false
-
-	# Capture the mouse
-	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-
-	# Set the debug canvas layer behind all others
+	# Set the canvas layer behind all other Control nodes
 	$Controls.layer = -1
-	
-	# Display chat if enabled
-	chat_window.visible = enable_chat
 
 
 ## Called each physics frame with the time since the last physics frame as argument (delta, in seconds).
 func _physics_process(delta) -> void:
 	# Uncomment the next line if using GodotSteam
 	#if !is_multiplayer_authority(): return
+	
+	# Apply gravity regardless of pause state (but not if climbing, driving, hanging, swimming, or noclip)
+	if !is_climbing and !is_driving and !is_hanging:
+		# Check if the player is "swimming" or noclip mode is enabled
+		if is_swimming or enable_noclip:
+			# Ignore the gravity
+			velocity.y = 0.0
+
+		# The player must not be "swimming"
+		else:
+			# Add the gravity
+			velocity.y -= gravity * delta
 
 	# Check if the game is not paused
 	if !game_paused:
@@ -169,33 +181,21 @@ func _physics_process(delta) -> void:
 			is_punching_left = false
 			is_punching_right = false
 
-		# Check if the player is not climbing, not driving, and not hanging
-		if !is_climbing and !is_driving and !is_hanging:
-			# Check if the player is "swimming" or noclip mode is enabled
-			if is_swimming or enable_noclip:
-				# Ignore the gravity
-				velocity.y = 0.0
-
-			# The player must not be "swimming"
-			else:
-				# Add the gravity
-				velocity.y -= gravity * delta
-
-			# Handle player movement
+		# Check if player is not hanging or climbing (these states handle their own movement)
+		if !is_hanging and !is_climbing:
+			# Handle player movement (input-based movement)
 			update_velocity()
 
-		# Check if the animation player is unlocked
-		if !is_animation_locked:
-			# Move player
-			move_player(delta)
+	# Check if the animation player is unlocked
+	if !is_animation_locked:
+		# Move player (physics movement)
+		move_player(delta)
 
 
 ## Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
-
 	# Uncomment the next line if using GodotSteam
 	#if !is_multiplayer_authority(): return
-
 	# Check if the game is not paused
 	if !game_paused:
 		# Check if the noclip mode is enabled
@@ -390,8 +390,8 @@ func update_velocity() -> void:
 	if direction:
 		# Check if the animation player is unlocked
 		if !is_animation_locked:
-			# Check if the player is not in "third person" perspective
-			if perspective == 0:
+			# Check if the player is not in "third person" perspective and not climbing/hanging
+			if perspective == 0 and !is_climbing and !is_hanging:
 				# Update the camera to look in the direction based on player input
 				visuals.look_at(position + direction)
 

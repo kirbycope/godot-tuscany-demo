@@ -86,7 +86,7 @@ scroll_active = false
 scroll_following = true
 autowrap_mode = 0
 
-[node name="BackToGameTouchButton" type="TouchScreenButton" parent="Panel/VBoxContainer/BackToGameButton"]
+[node name="TouchScreenButton" type="TouchScreenButton" parent="Panel/VBoxContainer/BackToGameButton"]
 position = Vector2(100, 20)
 shape = SubResource("RectangleShape2D_7k071")
 
@@ -117,7 +117,7 @@ scroll_active = false
 scroll_following = true
 autowrap_mode = 0
 
-[node name="ReturnHomeTouchButton" type="TouchScreenButton" parent="Panel/VBoxContainer/ReturnHomeButton"]
+[node name="TouchScreenButton" type="TouchScreenButton" parent="Panel/VBoxContainer/ReturnHomeButton"]
 position = Vector2(100, 20)
 shape = SubResource("RectangleShape2D_7k071")
 
@@ -148,7 +148,7 @@ scroll_active = false
 scroll_following = true
 autowrap_mode = 0
 
-[node name="SettingsTouchButton" type="TouchScreenButton" parent="Panel/VBoxContainer/SettingsButton"]
+[node name="TouchScreenButton" type="TouchScreenButton" parent="Panel/VBoxContainer/SettingsButton"]
 position = Vector2(100, 20)
 shape = SubResource("RectangleShape2D_7k071")
 
@@ -179,7 +179,7 @@ scroll_active = false
 scroll_following = true
 autowrap_mode = 0
 
-[node name="LeaveGameButton" type="TouchScreenButton" parent="Panel/VBoxContainer/LeaveGameButton"]
+[node name="TouchScreenButton" type="TouchScreenButton" parent="Panel/VBoxContainer/LeaveGameButton"]
 position = Vector2(100, 20)
 shape = SubResource("RectangleShape2D_7k071")
 
@@ -213,10 +213,10 @@ Refresh to restart."
 horizontal_alignment = 1
 
 [connection signal="pressed" from="Panel/VBoxContainer/BackToGameButton" to="." method="_on_back_to_game_button_pressed"]
-[connection signal="pressed" from="Panel/VBoxContainer/BackToGameButton/BackToGameTouchButton" to="." method="_on_back_to_game_button_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/BackToGameButton/TouchScreenButton" to="." method="_on_back_to_game_button_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/ReturnHomeButton" to="." method="_on_return_home_button_pressed"]
-[connection signal="pressed" from="Panel/VBoxContainer/ReturnHomeButton/ReturnHomeTouchButton" to="." method="_on_return_home_button_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/ReturnHomeButton/TouchScreenButton" to="." method="_on_return_home_button_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/SettingsButton" to="." method="_on_settings_button_pressed"]
-[connection signal="pressed" from="Panel/VBoxContainer/SettingsButton/SettingsTouchButton" to="." method="_on_settings_button_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/SettingsButton/TouchScreenButton" to="." method="toggle_settings"]
 [connection signal="pressed" from="Panel/VBoxContainer/LeaveGameButton" to="." method="_on_leave_game_button_pressed"]
-[connection signal="pressed" from="Panel/VBoxContainer/LeaveGameButton/LeaveGameButton" to="." method="_on_leave_game_button_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/LeaveGameButton/TouchScreenButton" to="." method="_on_leave_game_button_pressed"]
