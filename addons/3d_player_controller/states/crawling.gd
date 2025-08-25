@@ -1,23 +1,4 @@
 extends BaseState
-## crawling.gd
-
-# States (states.gd)
-#├── Base (base.gd)
-#├── Climbing (climbing.gd)
-#├── Crawling (crawling.gd)
-#├── Crouching (crouching.gd)
-#├── Driving (driving.gd)
-#├── Falling (falling.gd)
-#├── Flying (flying.gd)
-#├── Hanging (hanging.gd)
-#├── Holding (holding.gd)
-#├── Jumping (jumping.gd)
-#├── Running (running.gd)
-#├── Skateboarding (skateboarding.gd)
-#├── Sprinting (sprinting.gd)
-#├── Standing (standing.gd)
-#├── Swimming (swimming.gd)
-#└── Walking (walking.gd)
 
 const ANIMATION_CRAWLING := "Crawling_In_Place" + "/mixamo_com"
 const ANIMATION_CROUCHING_MOVE_HOLDING_RIFLE := "Rifle_Walk_Crouching" + "/mixamo_com"
@@ -28,23 +9,21 @@ const NODE_NAME := "Crawling"
 func _input(event: InputEvent) -> void:
 	# Check if the game is not paused
 	if !player.game_paused:
-		# [jump] button just _pressed_
-		if event.is_action_pressed("jump") and player.enable_jumping:
+		# Ⓐ/[Space] button just _pressed_
+		if event.is_action_pressed("button_0") and player.enable_jumping and !player.is_animation_locked:
 			# Start "jumping"
 			transition(NODE_NAME, "Jumping")
 
 
 ## Called every frame. '_delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:
-	# Uncomment the next line if using GodotSteam
-	#if !is_multiplayer_authority(): return
 	# Check if the player is not moving
 	if player.velocity == Vector3.ZERO:
 		# Start "crouching"		
 		transition(NODE_NAME, "Crouching")
 
-	# [crouch] button just _released_
-	if Input.is_action_just_released("crouch"):
+	# Ⓨ/[Ctrl] just _released_
+	if Input.is_action_just_released("button_3"):
 		# Start "standing"
 		transition(NODE_NAME, "Standing")
 
@@ -58,19 +37,28 @@ func _process(_delta: float) -> void:
 func play_animation() -> void:
 	# Check if the animation player is not locked
 	if !player.is_animation_locked:
+		# Check if in first person and moving backwards
+		var play_backwards = player.perspective == 1 and Input.is_action_pressed("move_down")
+		
 		# Check if the player is "holding a rifle"
 		if player.is_holding_rifle:
 			# Check if the animation player is not already playing the appropriate animation
 			if player.animation_player.current_animation != ANIMATION_CROUCHING_MOVE_HOLDING_RIFLE:
 				# Play the "crouching and moving, holding a rifle" animation
-				player.animation_player.play(ANIMATION_CROUCHING_MOVE_HOLDING_RIFLE, -1, 0.75)
+				if play_backwards:
+					player.animation_player.play_backwards(ANIMATION_CROUCHING_MOVE_HOLDING_RIFLE)
+				else:
+					player.animation_player.play(ANIMATION_CROUCHING_MOVE_HOLDING_RIFLE, -1, 0.75)
 
 		# The player must be unarmed
 		else:
 			# Check if the animation player is not already playing the appropriate animation
 			if player.animation_player.current_animation != ANIMATION_CRAWLING:
 				# Play the "crawling" animation
-				player.animation_player.play(ANIMATION_CRAWLING)
+				if play_backwards:
+					player.animation_player.play_backwards(ANIMATION_CRAWLING)
+				else:
+					player.animation_player.play(ANIMATION_CRAWLING)
 
 
 ## Start "crawling".

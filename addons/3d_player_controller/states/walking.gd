@@ -1,23 +1,4 @@
 extends BaseState
-## walking.gd
-
-# States (states.gd)
-#├── Base (base.gd)
-#├── Climbing (climbing.gd)
-#├── Crawling (crawling.gd)
-#├── Crouching (crouching.gd)
-#├── Driving (driving.gd)
-#├── Falling (falling.gd)
-#├── Flying (flying.gd)
-#├── Hanging (hanging.gd)
-#├── Holding (holding.gd)
-#├── Jumping (jumping.gd)
-#├── Running (running.gd)
-#├── Skateboarding (skateboarding.gd)
-#├── Sprinting (sprinting.gd)
-#├── Standing (standing.gd)
-#├── Swimming (swimming.gd)
-#└── Walking (walking.gd)
 
 const ANIMATION_WALKING := "Walking_In_Place" + "/mixamo_com"
 const ANIMATION_WALKING_AIMING_RIFLE := "Rifle_Walking_Aiming" + "/mixamo_com"
@@ -29,8 +10,6 @@ const NODE_NAME := "Walking"
 
 ## Called every frame. '_delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:
-	# Uncomment the next line if using GodotSteam
-	#if !is_multiplayer_authority(): return
 	# Check if the player is not moving
 	if player.velocity == Vector3.ZERO and player.virtual_velocity == Vector3.ZERO:
 		# Start "standing"		
@@ -38,6 +17,11 @@ func _process(_delta: float) -> void:
 
 	# The player must be moving
 	else:
+		# Check if the player is not on a floor
+		if !player.is_on_floor() and !player.raycast_below.is_colliding():
+			# Start "falling"
+			transition(NODE_NAME, "Falling")
+
 		# Check if the player speed is faster than "walking" but slower than or equal to "running"
 		if player.speed_walking < player.speed_current and player.speed_current <= player.speed_running:
 			# Start "running"
@@ -51,7 +35,7 @@ func _process(_delta: float) -> void:
 				transition(NODE_NAME, "Sprinting")
 
 		# [sprint] button _pressed_
-		if Input.is_action_pressed("sprint"):
+		if Input.is_action_pressed("button_1") and !player.is_animation_locked:
 			# Start "sprinting"
 			transition(NODE_NAME, "Sprinting")
 
@@ -65,26 +49,38 @@ func _process(_delta: float) -> void:
 func play_animation() -> void:
 	# Check if the animation player is not locked
 	if !player.is_animation_locked:
+		# Check if in first person and moving backwards
+		var play_backwards = player.perspective == 1 and Input.is_action_pressed("move_down")
+		
 		# Check if the player is "holding a rifle"
 		if player.is_holding_rifle:
 			# Check if the animation player is not already playing the appropriate animation
 			if player.animation_player.current_animation != ANIMATION_WALKING_HOLDING_RIFLE:
 				# Play the "walking, holding rifle" animation
-				player.animation_player.play(ANIMATION_WALKING_HOLDING_RIFLE)
+				if play_backwards:
+					player.animation_player.play_backwards(ANIMATION_WALKING_HOLDING_RIFLE)
+				else:
+					player.animation_player.play(ANIMATION_WALKING_HOLDING_RIFLE)
 
 		# Check if the player is "holding a tool"
-		if player.is_holding_tool:
+		elif player.is_holding_tool:
 			# Check if the animation player is not already playing the appropriate animation
 			if player.animation_player.current_animation != ANIMATION_WALKING_HOLDING_TOOL:
 				# Play the "walking, holding a tool" animation
-				player.animation_player.play(ANIMATION_WALKING_HOLDING_TOOL)
+				if play_backwards:
+					player.animation_player.play_backwards(ANIMATION_WALKING_HOLDING_TOOL)
+				else:
+					player.animation_player.play(ANIMATION_WALKING_HOLDING_TOOL)
 
 		# The player must be unarmed
 		else:
 			# Check if the animation player is not already playing the appropriate animation
 			if player.animation_player.current_animation != ANIMATION_WALKING:
 				# Play the "walking" animation
-				player.animation_player.play(ANIMATION_WALKING)
+				if play_backwards:
+					player.animation_player.play_backwards(ANIMATION_WALKING)
+				else:
+					player.animation_player.play(ANIMATION_WALKING)
 
 
 ## Start "walking".

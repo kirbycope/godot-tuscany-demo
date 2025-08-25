@@ -1,27 +1,11 @@
 extends BaseState
-## hanging.gd
 
-# States (states.gd)
-#├── Base (base.gd)
-#├── Climbing (climbing.gd)
-#├── Crawling (crawling.gd)
-#├── Crouching (crouching.gd)
-#├── Driving (driving.gd)
-#├── Falling (falling.gd)
-#├── Flying (flying.gd)
-#├── Hanging (hanging.gd)
-#├── Holding (holding.gd)
-#├── Jumping (jumping.gd)
-#├── Running (running.gd)
-#├── Skateboarding (skateboarding.gd)
-#├── Sprinting (sprinting.gd)
-#├── Standing (standing.gd)
-#├── Swimming (swimming.gd)
-#└── Walking (walking.gd)
-
+const ANIMATION_BRACED_HANG := "Braced_Hang_Idle" + "/mixamo_com"
+const ANIMATION_BRACED_HANG_SHIMMY_LEFT := "Braced_Hang_Shimmy_Left_In_Place" + "/mixamo_com"
+const ANIMATION_BRACED_HANG_SHIMMY_RIGHT := "Braced_Hang_Shimmy_Right_In_Place" + "/mixamo_com"
 const ANIMATION_HANGING := "Hanging_Idle" + "/mixamo_com"
-const ANIMATION_HANGING_SHIMMY_LEFT := "Braced_Hang_Shimmy_Left_In_Place" + "/mixamo_com"
-const ANIMATION_HANGING_SHIMMY_RIGHT := "Braced_Hang_Shimmy_Right_In_Place" + "/mixamo_com"
+const ANIMATION_HANGING_SHIMMY_LEFT := "Hanging_Shimmy_Left_In_Place" + "/mixamo_com"
+const ANIMATION_HANGING_SHIMMY_RIGHT := "Hanging_Shimmy_Right_In_Place" + "/mixamo_com"
 const NODE_NAME := "Hanging"
 
 
@@ -29,34 +13,43 @@ const NODE_NAME := "Hanging"
 func _input(event: InputEvent) -> void:
 	# Check if the game is not paused
 	if !player.game_paused:
-		# [crouch] button _pressed_
-		if event.is_action_pressed("crouch"):
+		# Ⓨ/[Ctrl] _pressed_ -> Start "falling"
+		if event.is_action_pressed("button_3"):
 			# Start falling
 			transition(NODE_NAME, "Falling")
-			return
 
-		# [jump] button _pressed_
-		if event.is_action_pressed("jump"):
+		# Ⓐ/[Space] button _pressed_ and the jump target is valid -> Start "mantling"
+		if event.is_action_pressed("button_0"):
+			# Force update the raycast to get current collision data
+			player.raycast_jumptarget.force_raycast_update()
 			# Check if there is a raycast collision
 			if player.raycast_jumptarget.is_colliding():
 				# Get the collision point
 				var collision_point = player.raycast_jumptarget.get_collision_point()
+				# Temporarily disable player collision to avoid physics interference during mantle
+				player.collision_shape.disabled = true
+				# Reset velocity to prevent unwanted movement
+				player.velocity = Vector3.ZERO
+				player.virtual_velocity = Vector3.ZERO
 				# Set the player's position to the collision point
 				var tween = get_tree().create_tween()
 				tween.tween_property(player, "position", collision_point, 0.2)
-				# Cehck if the player is in first-person perspective
+				# Wait for the tween to complete
+				await tween.finished
+				# Wait an additional frame for physics to settle
+				await get_tree().physics_frame
+				# Re-enable collision after positioning is complete
+				player.collision_shape.disabled = false
+				# Check if the player is in first-person perspective
 				if player.perspective == 1:
 					# Rotate the body to match the camera_mount
 					player.visuals.rotation = Vector3(0.0, player.camera_mount.rotation.y, player.camera_mount.rotation.z)
 				# Start "standing"
 				transition(NODE_NAME, "Standing")
-				return
 
 
 ## Called every frame. '_delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:
-	# Uncomment the next line if using GodotSteam
-	#if !is_multiplayer_authority(): return
 	# Check if the player is "hanging"
 	if player.is_hanging:
 		# Check if the player has no raycast collision
@@ -86,21 +79,27 @@ func move_character() -> void:
 	var wall_normal = player.raycast_high.get_collision_normal()
 	# Calculate the right vector (perpendicular to wall normal and up)
 	var wall_right = Vector3.UP.cross(wall_normal).normalized()
-
+	# Initialize movement direction
 	var move_direction = Vector3.ZERO
-
 	# Check current input states to support diagonal movement
 	if Input.is_action_pressed("move_left"):
 		move_direction += wall_right * -1
 	if Input.is_action_pressed("move_right"):
 		move_direction += wall_right
-
 	# Normalize for consistent speed when moving diagonally
 	if move_direction.length() > 0:
 		move_direction = move_direction.normalized()
-
+	# Scale the speed based on the player's size
+	var speed_current_scaled = player.speed_current * player.scale.x
+	# Rotate the player to face the wall (opposite of the collision normal)
+	var wall_direction = -wall_normal
+	# Ensure the wall direction is horizontal (remove any vertical component)
+	wall_direction.y = 0.0
+	wall_direction = wall_direction.normalized()
+	# Make the player face the wall while keeping upright
+	player.visuals.look_at(player.position + wall_direction, Vector3.UP)
 	# Apply movement
-	player.velocity = move_direction * player.speed_current
+	player.velocity = move_direction * speed_current_scaled
 	player.move_and_slide()
 
 
@@ -108,33 +107,85 @@ func move_character() -> void:
 func play_animation() -> void:
 	# Check if the animation player is not locked
 	if !player.is_animation_locked:
+		# Check if the player's hang is braced (the collider has somewhere for the player's footing)
+		player.is_braced = player.raycast_low.is_colliding()
 		# Check if the player is shimmying
 		player.is_shimmying = Input.is_action_pressed("move_left") or Input.is_action_pressed("move_right")
 
-		# If not moving, just pause current animation
+		# Check if the player is not moving -> Play "hanging" animation
 		if player.velocity == Vector3.ZERO:
-			player.visuals_aux_scene.position.y = -0.55 # Adjust visuals for hanging
-			if player.animation_player.current_animation != ANIMATION_HANGING:
-				player.animation_player.play(ANIMATION_HANGING)
+			# Check if the player is braced
+			if player.is_braced:
+				# Check if the current animation is not "braced hang idle"
+				if player.animation_player.current_animation != ANIMATION_BRACED_HANG:
+					# [Hack] Adjust visuals for animation
+					player.player_skeleton.position.x = 0.0
+					player.player_skeleton.position.y = -0.55
+					player.player_skeleton.position.z = 0.0
+					# Play the "braced hang idle" animation
+					player.animation_player.play(ANIMATION_BRACED_HANG)
+			# The player must not be braced
 			else:
-				player.animation_player.play()
-			return
+				# Check if playing the "hanging idle" animation
+				if player.animation_player.current_animation != ANIMATION_HANGING:
+					# [Hack] Adjust visuals for hanging
+					player.player_skeleton.position.x = 0.0
+					player.player_skeleton.position.y = -0.9
+					player.player_skeleton.position.z = 0.35
+					# Play the "hanging idle" animation
+					player.animation_player.play(ANIMATION_HANGING)
+				else:
+					player.animation_player.play()
 
+		# Check if the player is moving left -> Play "shimmy left" animation
 		if Input.is_action_pressed("move_left"):
-			player.visuals_aux_scene.position.y = -1.0 # Adjust visuals for left shimmy
-			if player.animation_player.current_animation != ANIMATION_HANGING_SHIMMY_LEFT:
-				player.animation_player.play(ANIMATION_HANGING_SHIMMY_LEFT)
+			# Check if the player is braced
+			if player.is_braced:
+				# [Hack] Adjust visuals for shimmying
+				player.player_skeleton.position.x = 0.0
+				player.player_skeleton.position.y = -1.0
+				player.player_skeleton.position.z = 0.0
+				# Check if playing the "braced hang, shimmy left" animation
+				if player.animation_player.current_animation != ANIMATION_BRACED_HANG_SHIMMY_LEFT:
+					# Play the "braced hang, shimmy left" animation
+					player.animation_player.play(ANIMATION_BRACED_HANG_SHIMMY_LEFT)
+			# The player must not be braced
 			else:
-				player.animation_player.play()
-			return
+				# Check if playing the "hanging, shimmy left" animation
+				if player.animation_player.current_animation != ANIMATION_HANGING_SHIMMY_LEFT:
+					# [Hack] Adjust visuals for shimmying
+					player.player_skeleton.position.x = 0.0
+					player.player_skeleton.position.y = -0.9
+					player.player_skeleton.position.z = 0.35
+					# Play the "hanging, shimmy left" animation
+					player.animation_player.play(ANIMATION_HANGING_SHIMMY_LEFT)
+				else:
+					player.animation_player.play()
 
+		# Check if the player is moving right -> Play "shimmy right" animation
 		if Input.is_action_pressed("move_right"):
-			player.visuals_aux_scene.position.y = -1.0 # Adjust visuals for right shimmy
-			if player.animation_player.current_animation != ANIMATION_HANGING_SHIMMY_RIGHT:
-				player.animation_player.play(ANIMATION_HANGING_SHIMMY_RIGHT)
+			# Check if the player is braced
+			if player.is_braced:
+				# [Hack] Adjust visuals for shimmying
+				player.player_skeleton.position.x = 0.0
+				player.player_skeleton.position.y = -1.0
+				player.player_skeleton.position.z = 0.0
+				# Check if playing the "braced hang, shimmy right" animation
+				if player.animation_player.current_animation != ANIMATION_BRACED_HANG_SHIMMY_RIGHT:
+					# Play the "braced hang, shimmy right" animation
+					player.animation_player.play(ANIMATION_BRACED_HANG_SHIMMY_RIGHT)
+				# The player must not be braced
 			else:
-				player.animation_player.play()
-			return
+				# [Hack] Adjust visuals for shimmying
+				player.player_skeleton.position.x = 0.0
+				player.player_skeleton.position.y = -0.9
+				player.player_skeleton.position.z = 0.35
+				# Check if playing the "hanging, shimmy right" animation
+				if player.animation_player.current_animation != ANIMATION_HANGING_SHIMMY_RIGHT:
+					# Play the "hanging, shimmy right" animation
+					player.animation_player.play(ANIMATION_HANGING_SHIMMY_RIGHT)
+				else:
+					player.animation_player.play()
 
 
 ## Start "hanging".
@@ -149,7 +200,7 @@ func start() -> void:
 	player.is_hanging = true
 
 	# Set the player's movement speed
-	player.speed_current = player.speed_climbing
+	player.speed_current = player.speed_hanging
 
 	# Get the player's height
 	var player_height = player.get_node("CollisionShape3D").shape.height
@@ -161,7 +212,7 @@ func start() -> void:
 	var collision_point = player.raycast_high.get_collision_point()
 
 	# [DEBUG] Draw a debug sphere at the collision point
-	#_draw_debug_sphere(collision_point, Color.RED)
+	#draw_debug_sphere(collision_point, Color.RED)
 
 	# Get the collision normal
 	var collision_normal = player.raycast_high.get_collision_normal()
@@ -179,7 +230,7 @@ func start() -> void:
 	collision_point = collision_point - direction * player_width
 
 	# [DEBUG] Draw a debug sphere at the collision point
-	#_draw_debug_sphere(collision_point, Color.YELLOW)
+	#draw_debug_sphere(collision_point, Color.YELLOW)
 
 	# Adjust the point relative to the player's height
 	collision_point = Vector3(collision_point.x, player.position.y, collision_point.z)
@@ -192,7 +243,7 @@ func start() -> void:
 	player.global_position = collision_point
 
 	# [DEBUG] Draw a debug sphere at the collision point
-	#_draw_debug_sphere(collision_point, Color.GREEN)
+	#draw_debug_sphere(collision_point, Color.GREEN)
 
 	# Wait one frame to ensure position is set before continuing
 	await get_tree().process_frame
@@ -228,19 +279,7 @@ func stop() -> void:
 	player.velocity.y = - player.gravity
 
 	# [Hack] Reset player visuals for animation
-	player.visuals_aux_scene.position.y = 0.0
+	player.player_skeleton.position.x = 0.0
+	player.player_skeleton.position.y = 0.0
+	player.player_skeleton.position.z = 0.0
 	player.animation_player.playback_default_blend_time = 0.2
-
-
-## Draws a debug sphere at the given position.
-func _draw_debug_sphere(pos: Vector3, color: Color) -> void:
-	var debug_sphere = MeshInstance3D.new()
-	player.get_tree().get_root().add_child(debug_sphere)
-	var sphere_mesh = SphereMesh.new()
-	sphere_mesh.radius = 0.1
-	sphere_mesh.height = 0.2
-	debug_sphere.mesh = sphere_mesh
-	var material = StandardMaterial3D.new()
-	material.albedo_color = color
-	debug_sphere.material_override = material
-	debug_sphere.global_position = pos

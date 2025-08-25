@@ -1,25 +1,7 @@
 extends Control
-## pause.gd
-
-# Player (player_3d.gd)
-#├── AudioStreamPlayer3D
-#├── CameraMount
-#│	└── Camera3D (camera_3d.gd)
-#│		└── ChatWindow (chat_window.gd)
-#│			└── Message (message.gd)
-#│		└── Debug (debug.gd)
-#│		└── Emotes (emotes.gd)
-#│		└── Pause (pause.gd)
-#│		└── Settings (settings.gd)
-#├── CollisionShape3D
-#├── Controls (controls.gd)
-#├── ShapeCast3D
-#├── States
-#└── Visuals
-#	└── AuxScene
-#		└── AnimationPlayer
 
 # Note: `@onready` variables are set when the scene is loaded.
+@onready var loading: ColorRect = $Loading
 @onready var player: CharacterBody3D = get_parent().get_parent().get_parent()
 @onready var quit: ColorRect = $Quit
 @onready var v_box_container: VBoxContainer = $Panel/VBoxContainer
@@ -27,6 +9,9 @@ extends Control
 
 ## Called when the node enters the scene tree for the first time.
 func _ready():
+	# Hide the "Loading..." message when scene loads
+	loading.hide()
+
 	# Connect focus signals for all controls to show visual feedback
 	for button in v_box_container.get_children():
 			button.focus_entered.connect(_on_button_focus_entered.bind(button))
@@ -36,7 +21,7 @@ func _ready():
 ## Called once for every event before _unhandled_input(), allowing you to consume some events.
 func _input(event) -> void:
 	# Check if the [pause] action _pressed_
-	if event.is_action_pressed("start"):
+	if event.is_action_pressed("button_9"):
 		# Toggle game paused
 		toggle_pause()
 
@@ -57,6 +42,18 @@ func _on_button_focus_entered(button: Control):
 func _on_button_focus_exited(button: Control):
 	# Return to normal appearance
 	button.modulate = Color(1.0, 1.0, 1.0)
+
+
+## Reload the current scene.
+func _on_restart_button_pressed() -> void:
+	# Show the "Loading..." message
+	loading.show()
+
+	# Wait a moment to ensure the message is displayed
+	await get_tree().create_timer(0.1).timeout
+
+	# Get the current scene and reload it
+	get_tree().reload_current_scene()
 
 
 ## Send player to their inital position.

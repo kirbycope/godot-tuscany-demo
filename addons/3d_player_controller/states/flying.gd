@@ -1,38 +1,18 @@
 extends BaseState
-## flying.gd
-
-# States (states.gd)
-#├── Base (base.gd)
-#├── Climbing (climbing.gd)
-#├── Crawling (crawling.gd)
-#├── Crouching (crouching.gd)
-#├── Driving (driving.gd)
-#├── Falling (falling.gd)
-#├── Flying (flying.gd)
-#├── Hanging (hanging.gd)
-#├── Holding (holding.gd)
-#├── Jumping (jumping.gd)
-#├── Running (running.gd)
-#├── Skateboarding (skateboarding.gd)
-#├── Sprinting (sprinting.gd)
-#├── Standing (standing.gd)
-#├── Swimming (swimming.gd)
-#└── Walking (walking.gd)
 
 const ANIMATION_FLYING := "Flying_In_Place" + "/mixamo_com"
 const ANIMATION_FLYING_FAST := "Flying_Fast_In_Place" + "/mixamo_com"
 const NODE_NAME := "Flying"
-var timer_jump = 0.0
+
+var timer_jump = 0.0 ## Timer to track time since last jump.
 
 
 ## Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
-	# Uncomment the next line if using GodotSteam
-	#if !is_multiplayer_authority(): return
 	# Check if the game is not paused
 	if !player.game_paused:
-		# [jump] button just _pressed_
-		if Input.is_action_just_pressed("jump"):
+		# Ⓐ/[Space] button just _pressed_
+		if Input.is_action_just_pressed("button_0"):
 			# Check if the animation player is not locked
 			if !player.is_animation_locked:
 				# Check if "jump timer" hasn't started
@@ -56,13 +36,13 @@ func _process(delta: float) -> void:
 					# Either way, reset the timer
 					timer_jump = Time.get_ticks_msec()
 
-		# [crouch] button just _pressed_
-		if Input.is_action_just_pressed("crouch"):
+		# Ⓨ/[Ctrl] just _pressed_
+		if Input.is_action_just_pressed("button_3"):
 			# Pitch the player slightly downward
 			player.visuals.rotation.x = deg_to_rad(-6)
 		
-		# [crouch] button currently _pressed_
-		if Input.is_action_pressed("crouch"):
+		# Ⓨ/[Ctrl] currently _pressed_
+		if Input.is_action_pressed("button_3"):
 			# Decrease the player's vertical position
 			player.position.y -= 5 * delta
 
@@ -71,28 +51,28 @@ func _process(delta: float) -> void:
 				# Start "standing"
 				transition(NODE_NAME, "Standing")
 		
-		# [crouch] button just _released_
-		if Input.is_action_just_released("crouch"):
+		# Ⓨ/[Ctrl] just _released_
+		if Input.is_action_just_released("button_3"):
 			# Reset the player's pitch
 			player.visuals.rotation.x = 0
 
-		# [jump] button just _pressed_
-		if Input.is_action_just_pressed("jump"):
+		# Ⓐ/[Space] button just _pressed_
+		if Input.is_action_just_pressed("button_0"):
 			# Pitch the player slightly downward
 			player.visuals.rotation.x = deg_to_rad(6)
 
-		# [jump] button currently _pressed_
-		if Input.is_action_pressed("jump"):
+		# Ⓐ/[Space] button currently _pressed_
+		if Input.is_action_pressed("button_0"):
 			# Increase the player's vertical position
 			player.position.y += 5 * delta
 
-		# [jump] button just _released_
-		if Input.is_action_just_released("jump"):
+		# Ⓐ/[Space] button just _released_
+		if Input.is_action_just_released("button_0"):
 			# Reset the player's pitch
 			player.visuals.rotation.x = 0
 
 		# [sprint] button _pressed_
-		if Input.is_action_pressed("sprint"):
+		if Input.is_action_pressed("button_1"):
 			# Check if the player is not "sprinting"
 			if !player.is_sprinting:
 				# Set the player's speed
@@ -102,7 +82,7 @@ func _process(delta: float) -> void:
 				player.is_sprinting = true
 
 		# [sprint] button just _released_
-		if Input.is_action_just_released("sprint"):
+		if Input.is_action_just_released("button_1"):
 			# Set the player's speed
 			player.speed_current = player.speed_flying
 

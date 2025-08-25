@@ -1,23 +1,4 @@
 extends Control
-## emotes.gd
-
-# Player (player_3d.gd)
-#├── AudioStreamPlayer3D
-#├── CameraMount
-#│	└── Camera3D (camera_3d.gd)
-#│		└── ChatWindow (chat_window.gd)
-#│			└── Message (message.gd)
-#│		└── Debug (debug.gd)
-#│		└── Emotes (emotes.gd)
-#│		└── Pause (pause.gd)
-#│		└── Settings (settings.gd)
-#├── CollisionShape3D
-#├── Controls (controls.gd)
-#├── ShapeCast3D
-#├── States
-#└── Visuals
-#	└── AuxScene
-#		└── AnimationPlayer
 
 const ANIMATION_CLAPPING := "Clapping" + "/mixamo_com"
 const ANIMATION_CRYING := "Crying" + "/mixamo_com"
@@ -45,23 +26,23 @@ func _input(event) -> void:
 					# Disable visibility
 					visible = false
 
-				# Check if the [dpad_down] action _pressed_
-				if event.is_action_pressed("dpad_down"):
+				# Check if the [dpad_down] action _released_
+				if event.is_action_released("button_13"):
 					# Perform emote 4
 					emote4()
 
-				# Check if the [dpad_left] action _pressed_
-				if event.is_action_pressed("dpad_left"):
+				# Check if the [dpad_left] action _released_ and not rotating an object
+				if event.is_action_released("button_14") and !player.is_rotating_object:
 					# Perform emote 2
 					emote2()
 
-				# Check if the [dpad_right] action _pressed_
-				if event.is_action_pressed("dpad_right"):
+				# Check if the [dpad_right] action _released_ and not rotating an object
+				if event.is_action_released("button_15") and !player.is_rotating_object:
 					# Perform emote 3
 					emote3()
 
-				# Check if the [dpad_up] action _pressed_
-				if event.is_action_pressed("dpad_up"):
+				# Check if the [dpad_up] action _released_
+				if event.is_action_released("button_12"):
 					# Perform emote 1
 					emote1()
 
@@ -75,8 +56,8 @@ func _input(event) -> void:
 				]:
 					return
 
-				# Check if the [dpad_left] action _pressed_
-				if event.is_action_pressed("dpad_left"):
+				# Check if the [dpad_left] action _released_ and not rotating an object
+				if event.is_action_released("button_14") and !player.is_rotating_object:
 					# Enable visibility
 					visible = true
 

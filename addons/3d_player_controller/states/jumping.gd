@@ -1,23 +1,4 @@
 extends BaseState
-## jumping.gd
-
-# States (states.gd)
-#├── Base (base.gd)
-#├── Climbing (climbing.gd)
-#├── Crawling (crawling.gd)
-#├── Crouching (crouching.gd)
-#├── Driving (driving.gd)
-#├── Falling (falling.gd)
-#├── Flying (flying.gd)
-#├── Hanging (hanging.gd)
-#├── Holding (holding.gd)
-#├── Jumping (jumping.gd)
-#├── Running (running.gd)
-#├── Skateboarding (skateboarding.gd)
-#├── Sprinting (sprinting.gd)
-#├── Standing (standing.gd)
-#├── Swimming (swimming.gd)
-#└── Walking (walking.gd)
 
 const ANIMATION_JUMPING := "Falling_Idle" + "/mixamo_com"
 const ANIMATION_JUMPING_HOLDING_RIFLE := "Rifle_Falling_Idle" + "/mixamo_com"
@@ -29,34 +10,40 @@ const NODE_NAME := "Jumping"
 func _input(event: InputEvent) -> void:
 	# Check if the game is not paused
 	if !player.game_paused:
-		# [jump] button just _pressed_
-		if event.is_action_pressed("jump"):
+		# Ⓐ/[Space] _pressed_ and double jumping is enabled -> Start "double jumping"
+		if event.is_action_pressed("button_0") and player.enable_double_jump and !player.is_double_jumping:
 			# Check if the animation player is not locked
 			if !player.is_animation_locked:
 				# Check if the player is not on the ground
 				if !player.is_on_floor():
-					# Check if "double jump" is enabled and the player is not currently double-jumping
-					if player.enable_double_jump and !player.is_double_jumping:
-						# Set the player's vertical velocity
-						player.velocity.y = player.jump_velocity
+					# Set the player's vertical velocity
+					player.velocity.y = player.jump_velocity
+					# Set the "double jumping" flag
+					player.is_double_jumping = true
 
-						# Set the "double jumping" flag
-						player.is_double_jumping = true
-					
-					# Check if "flying" is enabled and the player is not currently flying
-					elif player.enable_flying and !player.is_flying:
-						# Start "flying"
-						transition(NODE_NAME, "Flying")
+		# Ⓐ/[Space] _pressed_ and flying is enabled --> Start "flying"
+		if event.is_action_pressed("button_0") and player.enable_flying and !player.is_flying and !player.is_on_floor():
+			# Check if the animation player is not locked
+			if !player.is_animation_locked:
+				# Start "flying"
+				transition(NODE_NAME, "Flying")
+
+		# Ⓐ/[Space] _pressed_ and paragliding is enabled --> Start "paragliding"
+		if event.is_action_pressed("button_0") and player.enable_paragliding and !player.is_paragliding and !player.is_on_floor():
+			# Check if the player has a glider
+			if player.head_mount.get_child_count() > 0:
+				# Check if the animation player is not locked
+				if !player.is_animation_locked:
+					# Start "paragliding"
+					transition(NODE_NAME, "Paragliding")
 
 
 ## Called every frame. '_delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:
-	# Uncomment the next line if using GodotSteam
-	#if !is_multiplayer_authority(): return
 	# Check if the game is not paused
 	if !player.game_paused:
 		# Check if the player is not canceling a climb or hang
-		if !Input.is_action_pressed("crouch"):
+		if !Input.is_action_pressed("button_3"):
 			# Check the eyeline for a ledge to grab.
 			if !player.raycast_top.is_colliding() and player.raycast_high.is_colliding():
 				# Get the collision object
@@ -126,8 +113,11 @@ func start() -> void:
 	# Flag the player as not "double jumping"
 	player.is_double_jumping = false
 
+	# Scale the vertical velocity based on the player's size
+	var jump_velocity_scaled = player.jump_velocity * player.scale.y
+
 	# Set the player's vertical velocity
-	player.velocity.y = player.jump_velocity
+	player.velocity.y = jump_velocity_scaled
 
 
 ## Stop "jumping".

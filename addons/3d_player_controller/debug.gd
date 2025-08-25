@@ -1,23 +1,4 @@
 extends Control
-## debug.gd
-
-# Player (player_3d.gd)
-#├── AudioStreamPlayer3D
-#├── CameraMount
-#│	└── Camera3D (camera_3d.gd)
-#│		└── ChatWindow (chat_window.gd)
-#│			└── Message (message.gd)
-#│		└── Debug (debug.gd)
-#│		└── Emotes (emotes.gd)
-#│		└── Pause (pause.gd)
-#│		└── Settings (settings.gd)
-#├── CollisionShape3D
-#├── Controls (controls.gd)
-#├── ShapeCast3D
-#├── States
-#└── Visuals
-#	└── AuxScene
-#		└── AnimationPlayer
 
 # Note: `@onready` variables are set when the scene is loaded.
 @onready var player: CharacterBody3D = get_parent().get_parent().get_parent()
@@ -30,34 +11,37 @@ func _input(event) -> void:
 		# Toggle "debug" visibility
 		visible = !visible
 
+	# [R] key to trigger ragdoll for testing (only when debug panel is visible)
+	if visible and event is InputEventKey and event.pressed:
+		if event.keycode == KEY_R:
+			# Get the current state name and transition to ragdoll
+			var current_state_name = player.base_state.get_state_name(player.current_state)
+			# Transition to ragdoll state
+			player.base_state.transition(current_state_name, "Ragdoll")
+
 
 ## Called every frame. '_delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:
 	# Check is the Debug Panel is visible
 	if visible:
 		# Panel 1
-		$Panel1/IsAiming.button_pressed = player.is_aiming
 		$Panel1/IsAnimationLocked.button_pressed = player.is_animation_locked
-		$Panel1/IsCasting.button_pressed = player.is_casting
 		$Panel1/IsClimbing.button_pressed = player.is_climbing
 		$Panel1/IsCrawling.button_pressed = player.is_crawling
 		$Panel1/IsCrouching.button_pressed = player.is_crouching
 		$Panel1/IsDoubleJumping.button_pressed = player.is_double_jumping
 		$Panel1/IsDriving.button_pressed = player.is_driving
 		$Panel1/IsFalling.button_pressed = player.is_falling
-		$Panel1/IsFiring.button_pressed = player.is_firing
 		$Panel1/IsFlying.button_pressed = player.is_flying
 		$Panel1/IsHanging.button_pressed = player.is_hanging
 		$Panel1/IsHolding.button_pressed = player.is_holding
-		$Panel1/IsHoldingFishingRod.button_pressed = player.is_holding_fishing_rod
-		$Panel1/IsHoldingRifle.button_pressed = player.is_holding_rifle
-		$Panel1/IsHoldingTool.button_pressed = player.is_holding_tool
 		$Panel1/IsJumping.button_pressed = player.is_jumping
 		$Panel1/IsKickingLeft.button_pressed = player.is_kicking_left
 		$Panel1/IsKickingRight.button_pressed = player.is_kicking_right
+		$Panel1/IsParagliding.button_pressed = player.is_paragliding
 		$Panel1/IsPunchingLeft.button_pressed = player.is_punching_left
 		$Panel1/IsPunchingRight.button_pressed = player.is_punching_right
-		$Panel1/IsReeling.button_pressed = player.is_reeling
+		$Panel1/IsPushing.button_pressed = player.is_pushing
 		$Panel1/IsRunning.button_pressed = player.is_running
 		$Panel1/IsSkateboarding.button_pressed = player.is_skateboarding
 		$Panel1/IsShimmying.button_pressed = player.is_shimmying
@@ -66,7 +50,20 @@ func _process(_delta: float) -> void:
 		$Panel1/IsSwimming.button_pressed = player.is_swimming
 		$Panel1/IsUsing.button_pressed = player.is_using
 		$Panel1/IsWalking.button_pressed = player.is_walking
-
+		# Panel 1 - Fishing
+		$Panel1/Fishing/IsHoldingFishingRod.button_pressed = player.is_holding_fishing_rod
+		$Panel1/Fishing/IsCasting.button_pressed = player.is_casting
+		$Panel1/Fishing/IsReeling.button_pressed = player.is_reeling
+		# Panel 1 - Shooting
+		$Panel1/Shooting/IsHoldingRifle.button_pressed = player.is_holding_rifle
+		$Panel1/Shooting/IsAiming.button_pressed = player.is_aiming
+		$Panel1/Shooting/IsFiring.button_pressed = player.is_firing
+		# Panel 2 - Swinging
+		$Panel1/Swinging/IsHoldingTool.button_pressed = player.is_holding_tool
+		$Panel1/Swinging/IsBlockingLeft.button_pressed = player.is_blocking_left
+		$Panel1/Swinging/IsBlockingRight.button_pressed = player.is_blocking_right
+		$Panel1/Swinging/IsSwingingLeft.button_pressed = player.is_swinging_left
+		$Panel1/Swinging/IsSwingingRight.button_pressed = player.is_swinging_right
 		# Panel 2
 		$Panel2/EnableCrouching.button_pressed = player.enable_crouching
 		$Panel2/EnableClimbing.button_pressed = player.enable_climbing
@@ -75,6 +72,7 @@ func _process(_delta: float) -> void:
 		$Panel2/EnableFlying.button_pressed = player.enable_flying
 		$Panel2/EnableJumping.button_pressed = player.enable_jumping
 		$Panel2/EnableKicking.button_pressed = player.enable_kicking
+		$Panel2/EnableParagliding.button_pressed = player.enable_paragliding
 		$Panel2/EnablePunching.button_pressed = player.enable_punching
 		$Panel2/EnableSprinting.button_pressed = player.enable_sprinting
 		$Panel2/EnableVibration.button_pressed = player.enable_vibration
@@ -86,6 +84,7 @@ func _process(_delta: float) -> void:
 
 		# Panel 3
 		$Coordinates.text = "[center][color=red]X:[/color]%.1f [color=green]Y:[/color]%.1f [color=blue]Z:[/color]%.1f[/center]" % [player.global_position.x, player.global_position.y, player.global_position.z]
+		$Velocity.text = "[center][color=red]X:[/color]%.1f [color=green]Y:[/color]%.1f [color=blue]Z:[/color]%.1f[/center]" % [player.velocity.x, player.velocity.y, player.velocity.z]
 		$FPS.text = "FPS: " + str(int(Engine.get_frames_per_second()))
 
 
@@ -122,6 +121,10 @@ func _on_enable_jumping_toggled(toggled_on: bool) -> void:
 ## Called when the "enable_kicking" toggle option is changed.
 func _on_enable_kicking_toggled(toggled_on: bool) -> void:
 	player.enable_kicking = toggled_on
+
+
+func _on_enable_paragliding_toggled(toggled_on: bool) -> void:
+	player.enable_paragliding = toggled_on
 
 
 ## Called when the "enable_punching" toggle option is changed.

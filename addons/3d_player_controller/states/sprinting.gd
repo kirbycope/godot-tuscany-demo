@@ -1,23 +1,4 @@
 extends BaseState
-## sprinting.gd
-
-# States (states.gd)
-#├── Base (base.gd)
-#├── Climbing (climbing.gd)
-#├── Crawling (crawling.gd)
-#├── Crouching (crouching.gd)
-#├── Driving (driving.gd)
-#├── Falling (falling.gd)
-#├── Flying (flying.gd)
-#├── Hanging (hanging.gd)
-#├── Holding (holding.gd)
-#├── Jumping (jumping.gd)
-#├── Running (running.gd)
-#├── Skateboarding (skateboarding.gd)
-#├── Sprinting (sprinting.gd)
-#├── Standing (standing.gd)
-#├── Swimming (swimming.gd)
-#└── Walking (walking.gd)
 
 const ANIMATION_SPRINTING := "Sprinting_In_Place" + "/mixamo_com"
 const ANIMATION_SPRINTING_HOLDING_RIFLE := "Rifle_Sprinting_In_Place" + "/mixamo_com"
@@ -29,25 +10,30 @@ const NODE_NAME := "Sprinting"
 func _input(event: InputEvent) -> void:
 	# Check if the game is not paused
 	if !player.game_paused:
-		# [jump] button just _pressed_
-		if event.is_action_pressed("jump") and player.enable_jumping:
+		# Ⓐ/[Space] _pressed_ and jumping is enabled -> Start "jumping"
+		if event.is_action_pressed("button_0") and player.enable_jumping and !player.is_animation_locked:
 			# Start "jumping"
 			transition(NODE_NAME, "Jumping")
 
-		# [sprint] button just _released_
-		if event.is_action_released("sprint"):
-			# Start "standing"
+		# Ⓑ/[Shift] _released_ -> Stop "sprinting"
+		if event.is_action_released("button_1"):
+			# Start "standing" (which will check the player's speed and transition them to another state as needed)
 			transition(NODE_NAME, "Standing")
 
 
 ## Called every frame. '_delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:
-	# Uncomment the next line if using GodotSteam
-	#if !is_multiplayer_authority(): return
 	# Check if the player is not moving
 	if player.velocity == Vector3.ZERO and player.virtual_velocity == Vector3.ZERO:
 		# Start "standing"
 		transition(NODE_NAME, "Standing")
+
+	# The player must be moving
+	else:
+		# Check if the player is not on a floor
+		if !player.is_on_floor() and !player.raycast_below.is_colliding():
+			# Start "falling"
+			transition(NODE_NAME, "Falling")
 
 	# Check if the player is "sprinting"
 	if player.is_sprinting:
@@ -59,19 +45,28 @@ func _process(_delta: float) -> void:
 func play_animation() -> void:
 	# Check if the animation player is not locked
 	if !player.is_animation_locked:
+		# Check if in first person and moving backwards
+		var play_backwards = player.perspective == 1 and Input.is_action_pressed("move_down")
+		
 		# Check if the player is "holding a rifle"
 		if player.is_holding_rifle:
 			# Check if the animation player is not already playing the appropriate animation
 			if player.animation_player.current_animation != ANIMATION_SPRINTING_HOLDING_RIFLE:
 				# Play the "sprinting, holding a rifle" animation
-				player.animation_player.play(ANIMATION_SPRINTING_HOLDING_RIFLE)
+				if play_backwards:
+					player.animation_player.play_backwards(ANIMATION_SPRINTING_HOLDING_RIFLE)
+				else:
+					player.animation_player.play(ANIMATION_SPRINTING_HOLDING_RIFLE)
 
 		# The player must be unarmed
 		else:
 			# Check if the animation player is not already playing the appropriate animation
 			if player.animation_player.current_animation != ANIMATION_SPRINTING:
 				# Play the "sprinting" animation
-				player.animation_player.play(ANIMATION_SPRINTING)
+				if play_backwards:
+					player.animation_player.play_backwards(ANIMATION_SPRINTING)
+				else:
+					player.animation_player.play(ANIMATION_SPRINTING)
 
 
 ## Start "sprinting".

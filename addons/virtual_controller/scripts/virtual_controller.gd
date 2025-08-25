@@ -70,6 +70,7 @@ var tap_initial_position = null
 @onready var touch_screen_button_right: TouchScreenButton = virtual_buttons_bottom_left.get_node("TouchScreenButtonRight")
 @onready var touch_screen_button_up: TouchScreenButton = virtual_buttons_bottom_left.get_node("TouchScreenButtonUp")
 @onready var touch_screen_button_select: TouchScreenButton = virtual_buttons_bottom_left.get_node("TouchScreenButtonSelect")
+@onready var touch_screen_button_joystick_l: TouchScreenButton = virtual_buttons_bottom_left.get_node("TouchScreenButtonL")
 @onready var virtual_buttons_bottom_right: Control = $"../VirtualButtons/VirtualButtonsBottomRight"
 @onready var touch_screen_button_a: TouchScreenButton = virtual_buttons_bottom_right.get_node("TouchScreenButtonA")
 @onready var touch_screen_button_a_background: Sprite2D = virtual_buttons_bottom_right.get_node("TouchScreenButtonA/Background")
@@ -92,6 +93,7 @@ var tap_initial_position = null
 @onready var touch_screen_button_y_background: Sprite2D = virtual_buttons_bottom_right.get_node("TouchScreenButtonY/Background")
 @onready var touch_screen_button_y_initial_position := touch_screen_button_y.position
 @onready var touch_screen_button_start: TouchScreenButton = virtual_buttons_bottom_right.get_node("TouchScreenButtonStart")
+@onready var touch_screen_button_joystick_r: TouchScreenButton = virtual_buttons_bottom_right.get_node("TouchScreenButtonR")
 @onready var virtual_buttons_top_left: Control = $"../VirtualButtons/VirtualButtonsTopLeft"
 @onready var touch_screen_button_l_1: TouchScreenButton = virtual_buttons_top_left.get_node("TouchScreenButtonL1")
 @onready var touch_screen_button_l_2: TouchScreenButton = virtual_buttons_top_left.get_node("TouchScreenButtonL2")
@@ -100,38 +102,26 @@ var tap_initial_position = null
 @onready var touch_screen_button_r_2: TouchScreenButton = virtual_buttons_top_right.get_node("TouchScreenButtonR2")
 
 
-## Called when the node enters the scene tree for the first time.
-func _ready() -> void:
-	update_theme(current_theme)
-
-
 ## Called when there is an input event.
 func _input(event: InputEvent) -> void:
-
 	# Check if analog sticks are not enabled
 	if not enable_analog_stick_left and not enable_analog_stick_right:
-
 		# Return without drawing anything
 		return
 
 	# Check if the input is a Touch event
 	if event is InputEventScreenTouch:
-
 		# [touch] screen just _pressed_
 		if event.is_pressed():
-
 			# Check if the touch is on any button first
 			if is_touch_on_button(event.position):
-
 				# Skip processing this touch event for the virtual controller
 				return
 
 			# Check if the left analog stick is enabled
 			if enable_analog_stick_left:
-
 				# Check if the touch event took place on the left-half of the screen and the event has not been recorded
 				if event.position.x < get_viewport().get_visible_rect().size.x / 2 and !left_swipe_event_index:
-
 					# Record the touch event index
 					left_swipe_event_index = event.index
 
@@ -140,10 +130,8 @@ func _input(event: InputEvent) -> void:
 
 			# Check if the right analog stick is enabled
 			if enable_analog_stick_right:
-
 				# Check if the touch event took place on the right-half of the screen and the event has not been recorded
 				if event.position.x > get_viewport().get_visible_rect().size.x / 2 and !right_swipe_event_index:
-
 					# Record the touch event index
 					right_swipe_event_index = event.index
 
@@ -152,10 +140,8 @@ func _input(event: InputEvent) -> void:
 
 		# [touch] screen just _released_
 		else:
-
 			# Check if the event is related to the left-swipe event
 			if event.index == left_swipe_event_index:
-
 				# Reset swipe current position
 				left_swipe_current_position = null
 
@@ -179,7 +165,6 @@ func _input(event: InputEvent) -> void:
 
 			# Check if the event is related to the right-swipe event
 			if event.index == right_swipe_event_index:
-
 				# Reset swipe current position
 				right_swipe_current_position = null
 
@@ -203,10 +188,8 @@ func _input(event: InputEvent) -> void:
 
 	# Check if the input is a Drag event
 	if event is InputEventScreenDrag:
-
 		# Check if the event is related to the left-swipe event
 		if event.index == left_swipe_event_index and enable_analog_stick_left:
-
 			# Record swipe current position
 			left_swipe_current_position = event.position
 
@@ -245,7 +228,6 @@ func _input(event: InputEvent) -> void:
 
 		# Check if the event is related to the right-swipe event
 		if event.index == right_swipe_event_index and enable_analog_stick_right:
-
 			# Record swipe current position
 			right_swipe_current_position = event.position
 
@@ -266,11 +248,11 @@ func _input(event: InputEvent) -> void:
 				Input.action_release("look_right")
 
 			# Trigger the [look_up] action _pressed_
-			if right_swipe_delta.y < -SWIPE_DEADZONE*2:
+			if right_swipe_delta.y < -SWIPE_DEADZONE * 2:
 				Input.action_release("look_down")
 				Input.action_press("look_up")
 			# Trigger the [look_down] action _pressed_
-			elif right_swipe_delta.y > SWIPE_DEADZONE*2:
+			elif right_swipe_delta.y > SWIPE_DEADZONE * 2:
 				Input.action_release("look_up")
 				Input.action_press("look_down")
 			# Trigger the [look_up] and [look_down] actions _released_
@@ -287,22 +269,18 @@ func _input(event: InputEvent) -> void:
 
 ## Called when CanvasItem has been requested to redraw (after queue_redraw is called, either manually or by the engine).
 func _draw() -> void:
-
 	# Check if there is a left-swipe event
 	if left_swipe_event_index != null:
-
 		# Define the position to draw the gray circle
-		var draw_position_gray =  left_swipe_initial_position
+		var draw_position_gray = left_swipe_initial_position
 
 		# Draw a gray circle at the event origin
 		draw_circle(draw_position_gray, 64, Color(0.502, 0.502, 0.502, 0.5))
 
 		# Check if for drag motion
 		if left_swipe_current_position != null:
-
 			# Check if the swipe delta is more than the maximum distance
 			if left_swipe_delta.length() > MAX_DISTANCE:
-
 				# Clamp the offset vector's length
 				left_swipe_delta = left_swipe_delta.normalized() * MAX_DISTANCE
 
@@ -314,28 +292,23 @@ func _draw() -> void:
 
 	# Check if there is a right-swipe event
 	if right_swipe_event_index != null:
-
 		# Define the position to draw the gray circle
-		var draw_position_gray =  right_swipe_initial_position
+		var draw_position_gray = right_swipe_initial_position
 
 		# Check if the theme is Nintendo GameCube
 		if current_theme == theme.NintendoGameCube:
-
 			# Draw a dark yellow circle at the event origin
 			draw_circle(draw_position_gray, 64, Color(ALERT_WARNING, 0.5))
 
 		# The theme must not be Nintendo GameCube
 		else:
-
 			# Draw a gray circle at the event origin
 			draw_circle(draw_position_gray, 64, Color(0.502, 0.502, 0.502, 0.5))
 
 		# Check if for drag motion
 		if right_swipe_current_position != null:
-
 			# Check if the swipe delta is more than the maximum distance
 			if right_swipe_delta.length() > MAX_DISTANCE:
-
 				# Clamp the offset vector's length
 				right_swipe_delta = right_swipe_delta.normalized() * MAX_DISTANCE
 
@@ -344,26 +317,22 @@ func _draw() -> void:
 
 			# Check if the theme is Nintendo GameCube
 			if current_theme == theme.NintendoGameCube:
-
 				# Draw a yellow circle at the event location
 				draw_circle(draw_position_white, 48, Color(BOOTSTRAP_YELLOW, 0.5))
 
 			# The theme must not be Nintendo GameCube
 			else:
-
 				# Draw a white circle at the event location
 				draw_circle(draw_position_white, 48, Color(1.0, 1.0, 1.0, 0.5))
 
 
 ## Checks if a given position is within any TouchScreenButton.
 func is_touch_on_button(event_position: Vector2) -> bool:
-
 	# Get all TouchScreenButton nodes in the scene
 	var touch_buttons = get_tree().get_nodes_in_group("TouchScreenButton")
 
 	# Iterate through each button
 	for button in touch_buttons:
-
 		# Skip if button is not visible
 		if !button.visible:
 			continue
@@ -373,7 +342,6 @@ func is_touch_on_button(event_position: Vector2) -> bool:
 
 		# Check if the button has a texture
 		if texture:
-
 			# Get the size of the texture
 			var size = texture.get_size()
 
@@ -390,7 +358,6 @@ func is_touch_on_button(event_position: Vector2) -> bool:
 
 ## Updates button passthrough based on active swipe events.
 func update_button_passthrough():
-
 	# Set the "passby_press" of controls on the left side of the viewport
 	var should_passthrough = (left_swipe_event_index == null)
 	touch_screen_button_down.passby_press = should_passthrough
@@ -412,7 +379,6 @@ func update_button_passthrough():
 
 ## Updates the theme of the virtual controller.
 func update_theme(new_theme: theme) -> void:
-
 	# Update the current theme
 	current_theme = new_theme
 
@@ -440,6 +406,8 @@ func update_theme(new_theme: theme) -> void:
 	touch_screen_button_up.self_modulate = Color.WHITE
 	touch_screen_button_select.show()
 	touch_screen_button_select.self_modulate = Color.WHITE
+	touch_screen_button_joystick_l.show()
+	touch_screen_button_joystick_l.self_modulate = Color.WHITE
 	touch_screen_button_a.show()
 	touch_screen_button_a.texture_normal = WHITE_BUTTON_A
 	touch_screen_button_a.texture_pressed = BLACK_BUTTON_A
@@ -478,6 +446,8 @@ func update_theme(new_theme: theme) -> void:
 	touch_screen_button_y.position = touch_screen_button_y_initial_position
 	touch_screen_button_start.show()
 	touch_screen_button_start.self_modulate = Color.WHITE
+	touch_screen_button_joystick_r.show()
+	touch_screen_button_joystick_r.self_modulate = Color.WHITE
 	touch_screen_button_l_1.show()
 	touch_screen_button_l_1.self_modulate = Color.WHITE
 	touch_screen_button_l_2.show()
@@ -538,6 +508,8 @@ func update_theme(new_theme: theme) -> void:
 		touch_screen_button_x.hide()
 		touch_screen_button_y.hide()
 		touch_screen_button_select.hide()
+		touch_screen_button_joystick_l.hide()
+		touch_screen_button_joystick_r.hide()
 		touch_screen_button_start.self_modulate = BOOTSTRAP_RED
 		touch_screen_button_l_1.self_modulate = BOOTSTRAP_GRAY_DARK
 		touch_screen_button_l_2.self_modulate = BOOTSTRAP_GRAY_DARK
@@ -562,7 +534,9 @@ func update_theme(new_theme: theme) -> void:
 		touch_screen_button_x.hide()
 		touch_screen_button_y.hide()
 		touch_screen_button_select.self_modulate = BOOTSTRAP_GRAY_DARK
+		touch_screen_button_joystick_l.hide()
 		touch_screen_button_start.self_modulate = BOOTSTRAP_GRAY_DARK
+		touch_screen_button_joystick_r.hide()
 		touch_screen_button_l_1.hide()
 		touch_screen_button_l_2.hide()
 		touch_screen_button_r_1.hide()
@@ -591,7 +565,9 @@ func update_theme(new_theme: theme) -> void:
 		touch_screen_button_y_background.show()
 		touch_screen_button_y_background.self_modulate = Color.BLACK
 		touch_screen_button_select.hide()
+		touch_screen_button_joystick_l.hide()
 		touch_screen_button_start.self_modulate = BOOTSTRAP_GRAY
+		touch_screen_button_joystick_r.hide()
 		touch_screen_button_l_1.self_modulate = BOOTSTRAP_GRAY
 		touch_screen_button_l_2.self_modulate = BOOTSTRAP_GRAY
 		touch_screen_button_r_1.self_modulate = BOOTSTRAP_GRAY
@@ -628,7 +604,9 @@ func update_theme(new_theme: theme) -> void:
 		touch_screen_button_y_background.show()
 		touch_screen_button_y_background.self_modulate = BOOTSTRAP_GREEN
 		touch_screen_button_select.self_modulate = BOOTSTRAP_GRAY_DARK
+		touch_screen_button_joystick_l.self_modulate = BOOTSTRAP_GRAY_DARK
 		touch_screen_button_start.self_modulate = BOOTSTRAP_GRAY_DARK
+		touch_screen_button_joystick_r.self_modulate = BOOTSTRAP_GRAY_DARK
 		touch_screen_button_l_1.self_modulate = BOOTSTRAP_GRAY_DARK
 		touch_screen_button_l_2.self_modulate = BOOTSTRAP_GRAY_DARK
 		touch_screen_button_r_1.self_modulate = BOOTSTRAP_GRAY_DARK
@@ -655,7 +633,9 @@ func update_theme(new_theme: theme) -> void:
 		touch_screen_button_y_background.show()
 		touch_screen_button_y_background.self_modulate = Color.GRAY
 		touch_screen_button_select.self_modulate = BOOTSTRAP_GRAY_DARK
+		touch_screen_button_joystick_l.hide()
 		touch_screen_button_start.self_modulate = BOOTSTRAP_GRAY_DARK
+		touch_screen_button_joystick_r.hide()
 		touch_screen_button_l_1.self_modulate = BOOTSTRAP_GRAY
 		touch_screen_button_l_2.hide()
 		touch_screen_button_r_1.self_modulate = BOOTSTRAP_GRAY
@@ -695,7 +675,9 @@ func update_theme(new_theme: theme) -> void:
 		touch_screen_button_y_background.show()
 		touch_screen_button_y_background.self_modulate = BOOTSTRAP_YELLOW
 		touch_screen_button_select.self_modulate = BOOTSTRAP_GRAY_DARK
+		touch_screen_button_joystick_l.self_modulate = BOOTSTRAP_GRAY_DARK
 		touch_screen_button_start.self_modulate = BOOTSTRAP_GRAY_DARK
+		touch_screen_button_joystick_r.self_modulate = BOOTSTRAP_GRAY_DARK
 		touch_screen_button_l_1.self_modulate = BOOTSTRAP_GRAY_DARK
 		touch_screen_button_l_2.self_modulate = BOOTSTRAP_GRAY_DARK
 		touch_screen_button_r_1.self_modulate = BOOTSTRAP_GRAY_DARK

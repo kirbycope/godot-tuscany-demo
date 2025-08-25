@@ -1,5 +1,4 @@
 extends Node
-## states.gd
 
 # Define states as an enum for clarity
 enum State {
@@ -11,10 +10,13 @@ enum State {
 	FLYING,			# 5
 	HANGING,		# 6
 	JUMPING,		# 7
-	RUNNING,		# 8
-	SKATEBOARDING,	# 9
-	SPRINTING,		# 10
-	STANDING,		# 11
-	SWIMMING,		# 12
-	WALKING			# 13
+	PARAGLIDING,	# 8
+	PUSHING,		# 9
+	RAGDOLL,		# 10
+	RUNNING,		# 11
+	SKATEBOARDING,	# 12
+	SPRINTING,		# 13
+	STANDING,		# 14
+	SWIMMING,		# 15
+	WALKING			# 16
 }

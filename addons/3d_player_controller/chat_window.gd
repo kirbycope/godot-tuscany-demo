@@ -1,23 +1,4 @@
 extends Control
-## chat_window.gd
-
-# Player (player_3d.gd)
-#├── AudioStreamPlayer3D
-#├── CameraMount
-#│	└── Camera3D (camera_3d.gd)
-#│		└── ChatWindow (chat_window.gd)
-#│			└── Message (message.gd)
-#│		└── Debug (debug.gd)
-#│		└── Emotes (emotes.gd)
-#│		└── Pause (pause.gd)
-#│		└── Settings (settings.gd)
-#├── CollisionShape3D
-#├── Controls (controls.gd)
-#├── ShapeCast3D
-#├── States
-#└── Visuals
-#	└── AuxScene
-#		└── AnimationPlayer
 
 const MESSAGE_SCENE: PackedScene = preload("res://addons/3d_player_controller/message.tscn")
 
@@ -51,8 +32,8 @@ func _process(_delta: float) -> void:
 
 ## Called when there is an input event.
 func _input(event: InputEvent) -> void:
-	# [chat] button _released_
-	if event.is_action_released("dpad_right") and !player.game_paused:
+	# [chat] button _released_ and not selecting an emote and not rotating an object
+	if event.is_action_released("button_15") and !player.game_paused and !player.emotes_menu.visible and !player.is_rotating_object:
 
 		# Show the chat input
 		input_container.show()
